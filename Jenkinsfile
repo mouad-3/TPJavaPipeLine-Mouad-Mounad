@@ -15,11 +15,13 @@ pipeline {
             }
         }
 
-        stage('Compilation & Tests') {
+       stage('Compilation & Tests') {
             steps {
                 echo 'Exécution de Maven...'
-                // Utilisation de sh pour Linux/Docker, ou bat pour Windows
-                sh 'mvn clean package'
+                // On dit à Jenkins d'entrer dans le dossier 'mavenprog'
+                dir('mavenprog') {
+                    sh 'mvn clean package'
+                }
             }
         }
 
