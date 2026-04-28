@@ -1,3 +1,1 @@
-class Etudient {
-    
-}
+//bla bla bla
