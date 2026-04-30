@@ -1,48 +1,36 @@
 pipeline {
-    agent any
+agent {
+docker {
+// Image contenant Maven et Git
+image 'my-maven-git:latest'
+// Pour réutiliser le cache Maven local entre builds
+args '-v $HOME/.m2:/root/.m2'
+}
+}
+stages {
+stage('Checkout') {
+steps {
+// clean the directory
+sh "rm -rf *"
+// Checkout the Git repository
+sh "git clone https://github.com/mouad-3/TPJavaPepeLine-Mouad-Mounad"
+}
+}
+stage('Build') {
+steps {
+// Here, we can can run Maven commands
+script {
+def currentDir = pwd()
+echo "Current directory: ${currentDir}"
+// Navigate to the directory containing the Maven project
+dir('java-maven/maven') {
+// Run Maven commands
+sh 'mvn clean test package'
+sh "java -jar target/maven-0.0.1-SNAPSHOT.jar"
+}
 
-    tools {
-        // Vérifie bien que dans Jenkins (Manage Jenkins > Tools), 
-        // le nom de ton installation Maven est exactement 'maven'
-        maven 'maven' 
-    }
-
-    stages {
-        stage('Récupération du code') {
-            steps {
-                echo 'Clonage du dépôt depuis GitHub...'
-                checkout scm
-            }
-        }
-
-       stage('Compilation & Tests') {
-            steps {
-                echo 'Exécution de Maven...'
-                // On dit à Jenkins d'entrer dans le dossier 'mavenprog'
-                dir('mavenprog') {
-                    sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage('Build Image Docker') {
-            steps {
-                script {
-                    echo "Préparation de l'image Docker..."
-                    // CORRECTION : Pour que ton TP soit complet, on lance la vraie commande.
-                    // Si tu veux juste simuler, garde le echo mais attention aux apostrophes !
-                    sh 'docker build -t tp-java-pipeline-mouad .'
-                }
-            }
-        }
-    }
-    
-    post {
-        success {
-            echo 'Félicitations ! La Pipeline est terminée avec succès.'
-        }
-        failure {
-            echo 'La Pipeline a échoué. Vérifiez les logs de la console.'
-        }
-    }
+}
+}
+}
+}
 }
