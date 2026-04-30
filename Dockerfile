@@ -1,7 +1,12 @@
-# Utilisation de l'image Eclipse Temurin pour Java 17 (remplace l'ancienne image openjdk)
-FROM eclipse-temurin:17-jre-alpine
+FROM maven:3.9.6-eclipse-temurin-11 AS builder
 
-COPY mavenprog/target/*.jar app.jar
+RUN apt-get update && \
+    apt-get install -y git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Commande exécutée au démarrage du conteneur
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+RUN java -version && \
+    mvn -version && \
+    git --version
+
+WORKDIR /app
