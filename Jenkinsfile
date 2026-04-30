@@ -6,21 +6,28 @@ pipeline {
         }
     }
     stages {
-        stage('Checkout') {
-            steps {
-                sh "rm -rf *"
-                // Clone dans le répertoire courant (pas de sous-dossier supplémentaire)
-                sh "git clone https://github.com/mouad-3/TPJavaPipeLine-Mouad-Mounad.git ."
-            }
-        }
         stage('Build') {
             steps {
                 script {
                     def currentDir = pwd()
                     echo "Current directory: ${currentDir}"
-                    dir('java-maven/maven') {
-                        sh 'mvn clean test package'
-                        sh "java -jar target/maven-0.0.1-SNAPSHOT.jar"
+                    // Optionnel : lister les fichiers pour vérifier la structure
+                    sh 'ls -la'
+
+                    // Adaptez ce chemin selon la structure réelle de votre dépôt
+                    // D'après vos logs, le dépôt contient peut-être 'mavenprog' ou 'java-maven/maven'
+                    if (fileExists('java-maven/maven/pom.xml')) {
+                        dir('java-maven/maven') {
+                            sh 'mvn clean test package'
+                            sh 'java -jar target/maven-0.0.1-SNAPSHOT.jar'
+                        }
+                    } else if (fileExists('mavenprog/pom.xml')) {
+                        dir('mavenprog') {
+                            sh 'mvn clean test package'
+                            sh 'java -jar target/maven-0.0.1-SNAPSHOT.jar'
+                        }
+                    } else {
+                        error "Impossible de trouver le fichier pom.xml. Structure du dépôt inconnue."
                     }
                 }
             }
