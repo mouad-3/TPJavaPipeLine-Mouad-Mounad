@@ -13,7 +13,7 @@ steps {
 // clean the directory
 sh "rm -rf *"
 // Checkout the Git repository
-sh "git clone https://github.com/mouad-3/TPJavaPepeLine-Mouad-Mounad"
+sh "git clone https://github.com/mouad-3/TPJavaPipeLine-Mouad-Mounad.git"
 }
 }
 stage('Build') {
