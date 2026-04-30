@@ -9,13 +9,10 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Le checkout est déjà effectué automatiquement par Jenkins en amont.
-                    // Affiche le répertoire courant pour déboguer
                     def currentDir = pwd()
                     echo "Current directory: ${currentDir}"
                     sh 'ls -la'
 
-                    // Localise le répertoire contenant le pom.xml (selon votre structure)
                     def mavenDir = null
                     if (fileExists('java-maven/maven/pom.xml')) {
                         mavenDir = 'java-maven/maven'
@@ -28,19 +25,18 @@ pipeline {
                     }
                     echo "Répertoire du projet Maven : ${mavenDir}"
 
-                    // Exécute Maven puis lance le JAR généré
                     dir(mavenDir) {
                         sh 'mvn clean test package'
                         sh '''
                             JAR_FILE=$(find target -maxdepth 1 -name "*.jar" ! -name "*sources.jar" ! -name "*javadoc.jar" | head -n 1)
                             if [ -z "$JAR_FILE" ]; then
-                                echo "Aucun fichier JAR exécutable trouvé dans target/."
-                                echo "Contenu de target/ :"
+                                echo "Aucun fichier JAR trouvé dans target/."
                                 ls -l target/
                                 exit 1
                             fi
-                            echo "Exécution de $JAR_FILE"
-                            java -jar "$JAR_FILE"
+                            echo "Exécution de la classe principale depuis $JAR_FILE"
+                            # Exécute la classe principale sans passer par le manifest
+                            java -cp "$JAR_FILE" com.tp.pipeline.App
                         '''
                     }
                 }
