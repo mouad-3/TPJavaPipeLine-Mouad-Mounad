@@ -9,25 +9,39 @@ pipeline {
         stage('Build') {
             steps {
                 script {
+                    // Le checkout est déjà effectué automatiquement par Jenkins en amont.
+                    // Affiche le répertoire courant pour déboguer
                     def currentDir = pwd()
                     echo "Current directory: ${currentDir}"
-                    // Optionnel : lister les fichiers pour vérifier la structure
                     sh 'ls -la'
 
-                    // Adaptez ce chemin selon la structure réelle de votre dépôt
-                    // D'après vos logs, le dépôt contient peut-être 'mavenprog' ou 'java-maven/maven'
+                    // Localise le répertoire contenant le pom.xml (selon votre structure)
+                    def mavenDir = null
                     if (fileExists('java-maven/maven/pom.xml')) {
-                        dir('java-maven/maven') {
-                            sh 'mvn clean test package'
-                            sh 'java -jar target/maven-0.0.1-SNAPSHOT.jar'
-                        }
+                        mavenDir = 'java-maven/maven'
                     } else if (fileExists('mavenprog/pom.xml')) {
-                        dir('mavenprog') {
-                            sh 'mvn clean test package'
-                            sh 'java -jar target/maven-0.0.1-SNAPSHOT.jar'
-                        }
+                        mavenDir = 'mavenprog'
+                    } else if (fileExists('pom.xml')) {
+                        mavenDir = '.'
                     } else {
-                        error "Impossible de trouver le fichier pom.xml. Structure du dépôt inconnue."
+                        error 'Impossible de trouver le fichier pom.xml dans les emplacements attendus.'
+                    }
+                    echo "Répertoire du projet Maven : ${mavenDir}"
+
+                    // Exécute Maven puis lance le JAR généré
+                    dir(mavenDir) {
+                        sh 'mvn clean test package'
+                        sh '''
+                            JAR_FILE=$(find target -maxdepth 1 -name "*.jar" ! -name "*sources.jar" ! -name "*javadoc.jar" | head -n 1)
+                            if [ -z "$JAR_FILE" ]; then
+                                echo "Aucun fichier JAR exécutable trouvé dans target/."
+                                echo "Contenu de target/ :"
+                                ls -l target/
+                                exit 1
+                            fi
+                            echo "Exécution de $JAR_FILE"
+                            java -jar "$JAR_FILE"
+                        '''
                     }
                 }
             }
