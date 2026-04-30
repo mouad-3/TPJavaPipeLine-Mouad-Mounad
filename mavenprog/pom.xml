@@ -4,6 +4,9 @@
   <groupId>com.tp.pipeline</groupId>
   <artifactId>mavenprog</artifactId>
   <packaging>jar</packaging>
+  <build>
+    <finalName>maven-0.0.1-SNAPSHOT</finalName>
+</build>
   <version>1.0-SNAPSHOT</version>
   <name>mavenprog</name>
   <url>http://maven.apache.org</url>
